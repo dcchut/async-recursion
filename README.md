@@ -13,6 +13,8 @@ async fn fib(n : u32) -> u64 {
 }
 ```
 
+The compiler helpfully tells us that:
+
 ```console
 error[E0733]: recursion in an `async fn` requires boxing
 --> src/main.rs:1:26
@@ -23,8 +25,8 @@ error[E0733]: recursion in an `async fn` requires boxing
  = note: a recursive `async fn` must be rewritten to return a boxed `dyn Future`.
 ```
 
-This crate provides an attribute macro to automatically convert async fn f(...) -> ReturnType
-to a fn f(...) -> Pin<Box<dyn Future<Output = ReturnType> + Send>>
+This crate provides an attribute macro to automatically convert an async recursive function
+to one returning a boxed Future.
 
 # Example
 
