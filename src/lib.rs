@@ -41,6 +41,10 @@
 //!    }
 //! }
 //! ```
+//!
+//! # Limitations
+//! Currently the macro doesn't consider lifetimes at all; this is something I plan to work
+//! on in the future.
 
 extern crate proc_macro;
 
