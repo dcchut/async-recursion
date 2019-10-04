@@ -1,0 +1,18 @@
+[package]
+name = "async-recursion"
+version = "0.1.0"
+authors = ["Robert Usher <266585+dcchut@users.noreply.github.com>"]
+edition = "2018"
+license = "MIT OR Apache-2.0"
+description = "Recursion for async functions"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1.0"
+quote = "1.0"
+syn = { version = "1.0", features = ["full"] }
+
+[dev-dependencies]
+futures-executor-preview = "0.3.0-alpha.19"
