@@ -25,11 +25,8 @@
 //! = note: a recursive `async fn` must be rewritten to return a boxed `dyn Future`.
 //! ```
 //!
-//! This crate provides an attribute macro to automatically convert an async recursive function
+//! This crate provides an attribute macro to automatically convert an async function
 //! to one returning a boxed Future.
-//!
-//! This crate provides an attribute macro to automatically convert async fn f(...) -> ReturnType
-//! to a fn f(...) -> Pin<Box<dyn Future<Output = ReturnType> + Send>>
 //!
 //! # Example
 //!
@@ -61,15 +58,15 @@
 
 extern crate proc_macro;
 
-mod parse;
 mod expand;
+mod parse;
 
-use crate::parse::AsyncItem;
 use crate::expand::expand;
+use crate::parse::AsyncItem;
 
 use proc_macro::TokenStream;
-use syn::parse_macro_input;
 use quote::quote;
+use syn::parse_macro_input;
 
 #[proc_macro_attribute]
 pub fn async_recursion(_args: TokenStream, input: TokenStream) -> TokenStream {

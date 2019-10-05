@@ -25,7 +25,7 @@ error[E0733]: recursion in an `async fn` requires boxing
  = note: a recursive `async fn` must be rewritten to return a boxed `dyn Future`.
 ```
 
-This crate provides an attribute macro to automatically convert an async recursive function
+This crate provides an attribute macro to automatically convert an async function
 to one returning a boxed Future.
 
 # Example

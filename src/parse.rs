@@ -1,12 +1,12 @@
 use proc_macro2::Span;
-use syn::ItemFn;
 use syn::parse::{Error, Parse, ParseStream, Result};
+use syn::ItemFn;
 
 pub struct AsyncItem(pub ItemFn);
 
 impl Parse for AsyncItem {
     fn parse(input: ParseStream) -> Result<Self> {
-        let item : ItemFn = input.parse()?;
+        let item: ItemFn = input.parse()?;
 
         // Check that this is an async function
         if item.sig.asyncness.is_none() {
