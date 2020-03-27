@@ -27,7 +27,9 @@ impl<T> Node<'_, T> {
     }
 }
 
-#[async_recursion]
+// Note: Use the `?Send` notation here alows us not to require that our type parameter `T` is
+// `T: PartialEq + Sync + Send`.
+#[async_recursion(?Send)]
 async fn contains_value<'a, T>(value: &T, node: &Node<'a, T>) -> bool
 where
     T: PartialEq,
@@ -40,7 +42,7 @@ where
     }
 }
 
-#[async_recursion]
+#[async_recursion(?Send)]
 async fn contains_value_2<'a, 'b, T>(value: &'b T, node: &'b Node<'a, T>) -> bool
 where
     T: PartialEq,
@@ -113,4 +115,16 @@ fn struct_method_fib() {
         assert_eq!(e.fib(5).await, 5);
         assert_eq!(e.fib(7).await, 13);
     });
+}
+
+#[test]
+fn future_is_send() {
+    let fut = fib(6);
+
+    let child = std::thread::spawn(move || {
+        let result = block_on(fut);
+        assert_eq!(result, 8);
+    });
+
+    child.join().unwrap();
 }
