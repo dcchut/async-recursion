@@ -1,4 +1,4 @@
-use crate::parse::AsyncItem;
+use crate::parse::{AsyncItem, RecursionArgs};
 use proc_macro2::{Span, TokenStream};
 use quote::{quote, ToTokens};
 use syn::punctuated::Punctuated;
@@ -10,8 +10,8 @@ impl ToTokens for AsyncItem {
     }
 }
 
-pub fn expand(item: &mut AsyncItem) {
-    transform_sig(&mut item.0.sig);
+pub fn expand(item: &mut AsyncItem, args: &RecursionArgs) {
+    transform_sig(&mut item.0.sig, &args);
     transform_block(&mut item.0.block);
 }
 
@@ -42,7 +42,7 @@ impl ArgLifetime {
 //
 // Output:
 //     fn f<S, T>(x : S, y : &T) -> Pin<Box<dyn Future<Output = Ret> + Send>
-fn transform_sig(sig: &mut Signature) {
+fn transform_sig(sig: &mut Signature, args: &RecursionArgs) {
     // Determine the original return type
     let ret = match &sig.output {
         ReturnType::Default => quote!(()),
@@ -157,11 +157,15 @@ fn transform_sig(sig: &mut Signature) {
         box_lifetime.push(asr);
     }
 
-    // TODO: we should have an attribute for whether we want a Send bound here or not
+    let send_bound: TokenStream = if args.send_bound {
+        quote!(+ ::core::marker::Send)
+    } else {
+        quote!()
+    };
 
     // Modify the return type
     sig.output = parse_quote! {
         -> core::pin::Pin<Box<
-            dyn core::future::Future<Output = #ret> #(+ #box_lifetime)*>>
+            dyn core::future::Future<Output = #ret> #(+ #box_lifetime)* #send_bound >>
     };
 }
