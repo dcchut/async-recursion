@@ -1,10 +1,17 @@
-# Async Recursion Macro
+# async-recursion macro
+
+[![Build Status](https://travis-ci.org/dcchut/async-recursion.svg?branch=master)](https://travis-ci.org/dcchut/async-recursion)
+[![codecov](https://codecov.io/gh/dcchut/async-recursion/branch/master/graph/badge.svg)](https://codecov.io/gh/dcchut/async-recursion)
 
 Procedural macro for recursive async functions.
 
+* [Documentation](https://docs.rs/async-recursion/)
+* Cargo package: [async-recursion](https://crates.io/crates/async-recursion)
+
+## Motivation
 Consider the following recursive implementation of the fibonacci numbers:
 
-```rust ignore
+```rust,ignore
 async fn fib(n : u32) -> u64 {
    match n {
        0     => panic!("zero is not a valid argument to fib()!"),
@@ -20,10 +27,10 @@ The compiler helpfully tells us that:
 ```console
 error[E0733]: recursion in an `async fn` requires boxing
 --> src/main.rs:1:26
- |
+  |
 1 | async fn fib(n : u32) -> u64 {
- |                          ^^^ recursive `async fn`
- |
+  |                          ^^^ recursive `async fn`
+  |
  = note: a recursive `async fn` must be rewritten to return a boxed `dyn Future`.
 ```
 
@@ -50,7 +57,7 @@ async fn fib(n : u32) -> u64 {
 
 By default the returned future has a `Send` bound to make sure that it can be sent between threads. If this is not desired you can mark that you would like that that bound to be left out like so:
 
-```rust ignore
+```rust
 #[async_recursion(?Send)]
 async fn example() {}
 ```
@@ -59,6 +66,15 @@ In other words, `#[async_recursion]` modifies your function to return a [`BoxFut
 
 [`BoxFuture`]: https://docs.rs/futures/0.3.4/futures/future/type.BoxFuture.html
 [`LocalBoxFuture`]: https://docs.rs/futures/0.3.4/futures/future/type.LocalBoxFuture.html
+
+## Installation
+
+Add this to your `Cargo.toml`:
+
+```toml
+[dependencies]
+async-recursion = "0.2"
+```
 
 ### License
 
