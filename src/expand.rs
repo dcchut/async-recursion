@@ -102,19 +102,23 @@ fn transform_sig(sig: &mut Signature, args: &RecursionArgs) {
         }
     }
 
-    let mut box_lifetime = vec![];
-
-    let where_clause = sig
-        .generics
-        .where_clause
-        .get_or_insert_with(|| WhereClause {
-            where_token: Default::default(),
-            predicates: Punctuated::new(),
-        });
+    // Does this expansion require `async_recursion to be added to the output
+    let mut requires_lifetime = false;
+    let mut where_clause_lifetimes = vec![];
+    let mut where_clause_generics = vec![];
 
     // 'async_recursion lifetime
     let asr: Lifetime = parse_quote!('async_recursion);
 
+    // Add an S : 'async_recursion bound to any generic parameter
+    for param in sig.generics.type_params() {
+        let ident = param.ident.clone();
+        where_clause_generics.push(ident);
+
+        requires_lifetime = true;
+    }
+
+    // Add an 'a : 'async_recursion bound to any lifetimes 'a appearing in the function
     if !lifetimes.is_empty() {
         for alt in lifetimes {
             if let ArgLifetime::New(lt) = &alt {
@@ -124,18 +128,15 @@ fn transform_sig(sig: &mut Signature, args: &RecursionArgs) {
 
             // Add a bound to the where clause
             let lt = alt.lifetime();
-            where_clause.predicates.push(parse_quote!(#lt : #asr));
+            where_clause_lifetimes.push(lt);
         }
 
-        // Add the bounds
-        sig.generics.params.push(parse_quote!('async_recursion));
+        requires_lifetime = true;
+    }
 
-        // Add our lifetime to the return type
-        box_lifetime.push(asr);
-    } else if let Some(slt) = self_lifetime {
-        // Add the bounds
-        sig.generics.params.push(parse_quote!('async_recursion));
-
+    // If our function accepts &self, then we modify this to the explicit lifetime &'life0 self,
+    // and add the bound &'life0 : 'async_recursion
+    if let Some(slt) = self_lifetime {
         let lt = {
             if let Some(lt) = slt.as_mut() {
                 lt.clone()
@@ -150,12 +151,18 @@ fn transform_sig(sig: &mut Signature, args: &RecursionArgs) {
             }
         };
 
-        // add a bound on  'life0
-        where_clause.predicates.push(parse_quote!(#lt : #asr));
-
-        // add our lifetime to the return type
-        box_lifetime.push(asr);
+        where_clause_lifetimes.push(lt);
+        requires_lifetime = true;
     }
+
+    let box_lifetime: TokenStream = if requires_lifetime {
+        // Add 'async_recursion to our generic parameters
+        sig.generics.params.push(parse_quote!('async_recursion));
+
+        quote!(+ #asr)
+    } else {
+        quote!()
+    };
 
     let send_bound: TokenStream = if args.send_bound {
         quote!(+ ::core::marker::Send)
@@ -163,9 +170,27 @@ fn transform_sig(sig: &mut Signature, args: &RecursionArgs) {
         quote!()
     };
 
+    let where_clause =  sig
+        .generics
+        .where_clause
+        .get_or_insert_with(|| WhereClause {
+            where_token: Default::default(),
+            predicates: Punctuated::new(),
+        });
+
+    // Add our S : 'async_recursion bounds
+    for generic_ident in where_clause_generics {
+        where_clause.predicates.push(parse_quote!(#generic_ident : #asr));
+    }
+
+    // Add our 'a : 'async_recursion bounds
+    for lifetime in where_clause_lifetimes {
+        where_clause.predicates.push(parse_quote!(#lifetime : #asr));
+    }
+
     // Modify the return type
     sig.output = parse_quote! {
         -> core::pin::Pin<Box<
-            dyn core::future::Future<Output = #ret> #(+ #box_lifetime)* #send_bound >>
+            dyn core::future::Future<Output = #ret> #box_lifetime #send_bound >>
     };
 }

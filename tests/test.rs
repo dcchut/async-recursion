@@ -27,7 +27,7 @@ impl<T> Node<'_, T> {
     }
 }
 
-// Note: Use the `?Send` notation here alows us not to require that our type parameter `T` is
+// Note: Use the `?Send` notation here allows us not to require that our type parameter `T` is
 // `T: PartialEq + Sync + Send`.
 #[async_recursion(?Send)]
 async fn contains_value<'a, T>(value: &T, node: &Node<'a, T>) -> bool
@@ -61,6 +61,56 @@ impl Empty {
             3 => 2,
             _ => self.fib(n - 1).await + self.fib(n - 2).await,
         }
+    }
+
+    #[async_recursion]
+    pub async fn other_lifetime<'a>(&self, some_str: &'a str) -> &'a str {
+        if some_str.is_empty() {
+            ""
+        } else {
+            self.other_lifetime(&some_str[1..]).await
+        }
+    }
+}
+
+pub trait ThirtySeven {
+    fn thirty_seven(&self) -> u64 {
+        37
+    }
+
+    fn descend(&mut self) -> bool;
+}
+
+struct Silly {
+    counter: usize,
+}
+
+impl ThirtySeven for Silly {
+    fn descend(&mut self) -> bool {
+        if self.counter == 0 {
+            false
+        } else {
+            self.counter -= 1;
+            true
+        }
+    }
+}
+
+#[async_recursion]
+pub async fn generic_parameter<S: ThirtySeven + Send>(mut x: S) -> u64 {
+    if x.descend() {
+        generic_parameter(x).await
+    } else {
+        x.thirty_seven()
+    }
+}
+
+#[async_recursion(?Send)]
+pub async fn generic_parameter_no_send<T>(x: T, y: u64) -> u64 {
+    if y > 0 {
+        generic_parameter_no_send(x, y- 1 ).await
+    } else {
+        111
     }
 }
 
@@ -114,6 +164,24 @@ fn struct_method_fib() {
         assert_eq!(e.fib(6).await, 8);
         assert_eq!(e.fib(5).await, 5);
         assert_eq!(e.fib(7).await, 13);
+    });
+}
+
+#[test]
+fn struct_method_other_lifetime() {
+    block_on(async move {
+        let e = Empty {};
+        assert_eq!(e.other_lifetime("hello world").await, "");
+        assert_eq!(e.other_lifetime("something else").await, "");
+    });
+}
+
+#[test]
+fn generic_parameter_bounds() {
+    block_on(async move {
+        let s = Silly { counter: 45 };
+        assert_eq!(generic_parameter(s).await, 37);
+        assert_eq!(generic_parameter_no_send(Silly { counter : 999 }, 10).await, 111);
     });
 }
 
