@@ -1,16 +1,6 @@
 use async_recursion::async_recursion;
 use futures_executor::block_on;
 
-#[async_recursion]
-async fn fib(n: u32) -> u64 {
-    match n {
-        0 => panic!("zero is not a valid argument to fib()!"),
-        1 | 2 => 1,
-        3 => 2,
-        _ => fib(n - 1).await + fib(n - 2).await,
-    }
-}
-
 struct Node<'a, T> {
     value: T,
     left: Option<&'a Node<'a, T>>,
@@ -27,13 +17,10 @@ impl<T> Node<'_, T> {
     }
 }
 
-// Note: Use the `?Send` notation here alows us not to require that our type parameter `T` is
+// Note: Use the `?Send` notation here allows us not to require that our type parameter `T` is
 // `T: PartialEq + Sync + Send`.
 #[async_recursion(?Send)]
-async fn contains_value<'a, T>(value: &T, node: &Node<'a, T>) -> bool
-where
-    T: PartialEq,
-{
+async fn contains_value<'a, T: PartialEq>(value: &T, node: &Node<'a, T>) -> bool {
     if &node.value == value {
         true
     } else {
@@ -43,29 +30,12 @@ where
 }
 
 #[async_recursion(?Send)]
-async fn contains_value_2<'a, 'b, T>(value: &'b T, node: &'b Node<'a, T>) -> bool
-where
-    T: PartialEq,
-{
+async fn contains_value_2<'a, 'b, T: PartialEq>(value: &'b T, node: &'b Node<'a, T>) -> bool {
     contains_value(value, node).await
 }
 
-struct Empty {}
-
-impl Empty {
-    #[async_recursion]
-    pub async fn fib(&self, n: u32) -> u64 {
-        match n {
-            0 => panic!("zero is not a valid argument to fib()!"),
-            1 | 2 => 1,
-            3 => 2,
-            _ => self.fib(n - 1).await + self.fib(n - 2).await,
-        }
-    }
-}
-
 #[test]
-fn basic_lifetimes_test() {
+fn lifetime_expansion_works() {
     block_on(async move {
         let mut node = Node::new(10);
         let mut left = Node::new(5);
@@ -95,36 +65,4 @@ fn basic_lifetimes_test() {
         assert_eq!(contains_value_2(&13, &node).await, true);
         assert_eq!(contains_value_2(&12, &node).await, false);
     });
-}
-
-#[test]
-fn fibonacci_works() {
-    block_on(async move {
-        assert_eq!(fib(3).await, 2);
-        assert_eq!(fib(4).await, 3);
-        assert_eq!(fib(5).await, 5);
-        assert_eq!(fib(6).await, 8);
-    });
-}
-
-#[test]
-fn struct_method_fib() {
-    block_on(async move {
-        let e = Empty {};
-        assert_eq!(e.fib(6).await, 8);
-        assert_eq!(e.fib(5).await, 5);
-        assert_eq!(e.fib(7).await, 13);
-    });
-}
-
-#[test]
-fn future_is_send() {
-    let fut = fib(6);
-
-    let child = std::thread::spawn(move || {
-        let result = block_on(fut);
-        assert_eq!(result, 8);
-    });
-
-    child.join().unwrap();
 }
