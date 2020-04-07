@@ -40,7 +40,7 @@ impl Parse for RecursionArgs {
             input.parse::<kw::Send>()?;
             Ok(Self { send_bound: false })
         } else if !input.is_empty() {
-            return Err(input.error("expected `?Send` or empty"));
+            Err(input.error("expected `?Send` or empty"))
         } else {
             Ok(Self::default())
         }

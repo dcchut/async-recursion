@@ -170,7 +170,7 @@ fn transform_sig(sig: &mut Signature, args: &RecursionArgs) {
         quote!()
     };
 
-    let where_clause =  sig
+    let where_clause = sig
         .generics
         .where_clause
         .get_or_insert_with(|| WhereClause {
@@ -180,7 +180,9 @@ fn transform_sig(sig: &mut Signature, args: &RecursionArgs) {
 
     // Add our S : 'async_recursion bounds
     for generic_ident in where_clause_generics {
-        where_clause.predicates.push(parse_quote!(#generic_ident : #asr));
+        where_clause
+            .predicates
+            .push(parse_quote!(#generic_ident : #asr));
     }
 
     // Add our 'a : 'async_recursion bounds
