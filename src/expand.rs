@@ -134,14 +134,15 @@ fn transform_sig(sig: &mut Signature, args: &RecursionArgs) {
         requires_lifetime = true;
     }
 
-    // If our function accepts &self, then we modify this to the explicit lifetime &'life0 self,
-    // and add the bound &'life0 : 'async_recursion
+    // If our function accepts &self, then we modify this to the explicit lifetime &'life_self,
+    // and add the bound &'life_self : 'async_recursion
     if let Some(slt) = self_lifetime {
         let lt = {
             if let Some(lt) = slt.as_mut() {
                 lt.clone()
             } else {
-                let lt: Lifetime = parse_quote!('life0);
+                // We use `life_self here to avoid any collisions with `life0, `life1 from above
+                let lt: Lifetime = parse_quote!('life_self);
                 sig.generics.params.push(parse_quote!(#lt));
 
                 // add lt to the lifetime of self
