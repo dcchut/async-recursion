@@ -22,6 +22,11 @@ impl Empty {
             self.empty_string(&some_str[1..]).await
         }
     }
+
+    #[async_recursion]
+    pub async fn generic_parameter<T>(&self, _something: &T) -> u64 {
+        0
+    }
 }
 
 #[test]
