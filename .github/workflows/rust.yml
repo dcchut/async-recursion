@@ -1,0 +1,17 @@
+name: Push action
+on: [push]
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        rust: [stable]
+
+    steps:
+      - uses: hecrj/setup-rust-action@v1
+        with:
+          rust-version: ${{ matrix.rust }}
+      - uses: actions/checkout@master
+      - name: Tests
+        run: cargo fmt -- --check && cargo clippy -- -Dwarnings && cargo test --verbose
