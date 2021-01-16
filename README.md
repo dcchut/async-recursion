@@ -1,7 +1,6 @@
 # async-recursion macro
 
-[![Build Status](https://travis-ci.org/dcchut/async-recursion.svg?branch=master)](https://travis-ci.org/dcchut/async-recursion)
-[![codecov](https://codecov.io/gh/dcchut/async-recursion/branch/master/graph/badge.svg)](https://codecov.io/gh/dcchut/async-recursion)
+![Build Status](https://github.com/dcchut/async-recursion/workflows/Push%20action/badge.svg?branch=master)
 
 Procedural macro for recursive async functions.
 
