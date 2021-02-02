@@ -193,7 +193,7 @@ fn transform_sig(sig: &mut Signature, args: &RecursionArgs) {
 
     // Modify the return type
     sig.output = parse_quote! {
-        -> core::pin::Pin<Box<
-            dyn core::future::Future<Output = #ret> #box_lifetime #send_bound >>
+        -> ::core::pin::Pin<Box<
+            dyn ::core::future::Future<Output = #ret> #box_lifetime #send_bound >>
     };
 }
