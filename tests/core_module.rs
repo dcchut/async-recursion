@@ -5,6 +5,6 @@ mod core {
 }
 
 #[async_recursion]
-async fn n(x: i32) -> i32 {
+pub async fn n(x: i32) -> i32 {
     x
 }
