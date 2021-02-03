@@ -72,7 +72,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-async-recursion = "0.2"
+async-recursion = "0.3"
 ```
 
 ### License
