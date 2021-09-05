@@ -34,38 +34,9 @@
 //! ```
 //!
 //! This crate provides an attribute macro to automatically convert an async function
-//! to one returning a boxed Future.
+//! to one returning a boxed [`Future`](core::future::Future).
 //!
-//! ## Example
-//!
-//! ```rust
-//! use async_recursion::async_recursion;
-//!
-//! #[async_recursion]
-//! async fn fib(n : u32) -> u64 {
-//!    match n {
-//!        0     => panic!("zero is not a valid argument to fib()!"),
-//!        1 | 2 => 1,
-//!        3     => 2,
-//!        _ => fib(n-1).await + fib(n-2).await
-//!    }
-//! }
-//! ```
-//!
-//! ## ?Send Option
-//!
-//! By default the returned future has a `Send` bound to make sure that it can be sent between threads. If this is not desired you can mark that you would like that that bound to be left out like so:
-//!
-//! ```rust
-//! # use async_recursion::async_recursion;
-//! #[async_recursion(?Send)]
-//! async fn example() {}
-//! ```
-//!
-//! In other words, `#[async_recursion]` modifies your function to return a [`BoxFuture`] and `#[async_recursion(?Send)]` modifies your function to return a [`LocalBoxFuture`].
-//!
-//! [`BoxFuture`]: https://docs.rs/futures/0.3.4/futures/future/type.BoxFuture.html
-//! [`LocalBoxFuture`]: https://docs.rs/futures/0.3.4/futures/future/type.LocalBoxFuture.html
+#![doc = include_str!("../macro_docs.md")]
 //!
 //! ## Installation
 //!
@@ -73,16 +44,17 @@
 //!
 //! ```toml
 //! [dependencies]
-//! async-recursion = "0.2"
+//! async-recursion = "0.3"
 //! ```
 //!
 //! ### License
 //!
 //! Licensed under either of
 //!  * Apache License, Version 2.0
-//!    ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+//!    ([LICENSE-APACHE](LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
 //!  * MIT license
-//!    ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+//!    ([LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
+//!
 //! at your option.
 
 extern crate proc_macro;
@@ -97,6 +69,12 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::parse_macro_input;
 
+/// Procedural macro for recursive macro functions.
+///
+/// This is an attribute macro to automatically convert an async function to one
+/// returning a boxed [`Future`](core::future::Future).
+///
+#[doc = include_str!("../macro_docs.md")]
 #[proc_macro_attribute]
 pub fn async_recursion(args: TokenStream, input: TokenStream) -> TokenStream {
     let mut item = parse_macro_input!(input as AsyncItem);

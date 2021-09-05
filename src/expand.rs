@@ -11,7 +11,7 @@ impl ToTokens for AsyncItem {
 }
 
 pub fn expand(item: &mut AsyncItem, args: &RecursionArgs) {
-    transform_sig(&mut item.0.sig, &args);
+    transform_sig(&mut item.0.sig, args);
     transform_block(&mut item.0.block);
 }
 
