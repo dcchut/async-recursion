@@ -24,7 +24,6 @@ impl ThirtySeven for Silly {
     }
 }
 
-// For this to compile we require a S: 'async_recursion bound to be added
 #[async_recursion]
 pub async fn generic_parameter<S: ThirtySeven + Send>(mut x: S) -> u64 {
     if x.descend() {
@@ -34,7 +33,6 @@ pub async fn generic_parameter<S: ThirtySeven + Send>(mut x: S) -> u64 {
     }
 }
 
-// For this to compile we require a T: `async_recursion bound to be added
 #[async_recursion(?Send)]
 pub async fn generic_parameter_no_send<T>(x: T, y: u64) -> u64 {
     if y > 0 {
@@ -42,6 +40,13 @@ pub async fn generic_parameter_no_send<T>(x: T, y: u64) -> u64 {
     } else {
         111
     }
+}
+
+#[test]
+fn generic_parameter_is_send() {
+    fn assert_is_send(_: impl Send) {}
+
+    assert_is_send(generic_parameter(Silly { counter: 10 }));
 }
 
 #[test]
