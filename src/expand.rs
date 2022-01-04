@@ -6,12 +6,12 @@ use syn::{parse_quote, Block, FnArg, Lifetime, ReturnType, Signature, Type, Wher
 
 impl ToTokens for AsyncItem {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        self.0.to_tokens(tokens)
+        self.0.to_tokens(tokens);
     }
 }
 
 pub fn expand(item: &mut AsyncItem, args: &RecursionArgs) {
-    transform_sig(&mut item.0.sig, &args);
+    transform_sig(&mut item.0.sig, args);
     transform_block(&mut item.0.block);
 }
 
@@ -31,8 +31,7 @@ enum ArgLifetime {
 impl ArgLifetime {
     pub fn lifetime(self) -> Lifetime {
         match self {
-            ArgLifetime::New(lt) => lt,
-            ArgLifetime::Existing(lt) => lt,
+            ArgLifetime::New(lt) | ArgLifetime::Existing(lt) => lt,
         }
     }
 }
@@ -72,7 +71,7 @@ fn transform_sig(sig: &mut Signature, args: &RecursionArgs) {
     let mut lifetimes = Vec::new();
 
     if !ref_arguments.is_empty() {
-        for ra in ref_arguments.iter_mut() {
+        for ra in &mut ref_arguments {
             // If this reference arg doesn't have a lifetime, give it an explicit one
             if ra.lifetime.is_none() {
                 let lt = Lifetime::new(&format!("'life{}", counter), Span::call_site());

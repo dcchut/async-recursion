@@ -23,12 +23,6 @@ fn fibonacci_example_works() {
 
 #[test]
 fn fibonacci_example_is_send() {
-    let fut = fib(6);
-
-    let child = std::thread::spawn(move || {
-        let result = block_on(fut);
-        assert_eq!(result, 8);
-    });
-
-    child.join().unwrap();
+    fn assert_is_send(_: impl Send) {}
+    assert_is_send(fib(6));
 }
