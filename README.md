@@ -1,6 +1,9 @@
 # async-recursion macro
 
-![Build Status](https://github.com/dcchut/async-recursion/workflows/Push%20action/badge.svg?branch=master)
+![latest version](https://img.shields.io/crates/v/async-recursion)
+![crates.io downloads](https://img.shields.io/crates/d/async_recursion)
+![Build Status](https://img.shields.io/github/workflow/status/dcchut/async-recursion/Push%20action/master)
+![Apache/MIT2.0 License](https://img.shields.io/crates/l/async-recursion)
 
 Procedural macro for recursive async functions.
 
