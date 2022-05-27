@@ -1,8 +1,8 @@
 //! # async-recursion macro
 //!
-//! ![latest version](https://img.shields.io/crates/v/async-recursion)
-//! ![crates.io downloads](https://img.shields.io/crates/d/async_recursion)
-//! ![Build Status](https://img.shields.io/github/workflow/status/dcchut/async-recursion/Push%20action/master)
+//! [![Latest version](https://img.shields.io/crates/v/async-recursion)](https://crates.io/crates/async-recursion)
+//! [![crates.io downloads](https://img.shields.io/crates/d/async_recursion)](https://crates.io/crates/async-recursion)
+//! [![Build Status](https://img.shields.io/github/workflow/status/dcchut/async-recursion/Push%20action/master)](https://github.com/dcchut/async-recursion/actions)
 //! ![Apache/MIT2.0 License](https://img.shields.io/crates/l/async-recursion)
 //!
 //! Procedural macro for recursive async functions.
