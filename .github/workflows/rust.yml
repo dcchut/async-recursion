@@ -1,5 +1,10 @@
 name: Push action
-on: [push]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
 jobs:
   test:
     runs-on: ${{ matrix.os }}
