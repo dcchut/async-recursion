@@ -11,14 +11,46 @@ impl ToTokens for AsyncItem {
 }
 
 pub fn expand(item: &mut AsyncItem, args: &RecursionArgs) {
+    let return_type: Option<Box<Type>> = match &item.0.sig.output {
+        ReturnType::Default => None,
+        ReturnType::Type(_, typ) => Some(typ.clone()),
+    };
     transform_sig(&mut item.0.sig, args);
-    transform_block(&mut item.0.block);
+    transform_block(&mut item.0.block, return_type);
 }
 
-fn transform_block(block: &mut Block) {
+// Input:
+//     { <statements> }
+//
+// Output:
+//     {
+//         Box::pin({
+//             let __ret: Ret = async move { <statements >};
+//             __ret
+//         })
+//     }
+fn transform_block(block: &mut Block, return_type: Option<Box<Type>>) {
     let brace = block.brace_token;
+
+    let bound = match return_type {
+        Some(typ) => {
+            quote!(
+                let __ret: #typ = #block;
+                __ret
+            )
+        }
+        None => {
+            quote!(
+                let __ret: () = #block;
+                __ret
+            )
+        }
+    };
+
     *block = parse_quote!({
-        Box::pin(async move #block)
+        Box::pin(async move {
+            #bound
+        })
     });
     block.brace_token = brace;
 }

@@ -69,7 +69,7 @@ fn struct_method_with_generic_parameter_works() {
     block_on(async move {
         let e = Empty {};
         assert_eq!(
-            e.generic_parameter::<*const u64>(&(0 as *const u64)).await,
+            e.generic_parameter::<*const u64>(&std::ptr::null()).await,
             0
         );
     })
