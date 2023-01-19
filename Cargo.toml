@@ -19,3 +19,4 @@ syn = { version = "1.0", features = ["full", "parsing", "printing", "proc-macro"
 
 [dev-dependencies]
 futures-executor = "0.3"
+trybuild = "1.0"
