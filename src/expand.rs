@@ -184,6 +184,12 @@ fn transform_sig(sig: &mut Signature, args: &RecursionArgs) {
         quote!()
     };
 
+    let sync_bound: TokenStream = if args.sync_bound {
+        quote!(+ ::core::marker::Sync)
+    } else {
+        quote!()
+    };
+
     let where_clause = sig
         .generics
         .where_clause
@@ -207,6 +213,6 @@ fn transform_sig(sig: &mut Signature, args: &RecursionArgs) {
     // Modify the return type
     sig.output = parse_quote! {
         -> ::core::pin::Pin<Box<
-            dyn ::core::future::Future<Output = #ret> #box_lifetime #send_bound >>
+            dyn ::core::future::Future<Output = #ret> #box_lifetime #send_bound #sync_bound >>
     };
 }
