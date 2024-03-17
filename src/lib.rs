@@ -52,27 +52,40 @@
 //! }
 //! ```
 //!
-//! ## ?Send Option
+//! ## ?Send option
 //!
-//! The returned future has a [`Send`] bound to make sure it can be sent between threads.
+//! The returned [`Future`] has a [`Send`] bound to make sure it can be sent between threads.
 //! If this is undesirable you can mark that the bound should be left out like so:
 //!
 //! ```rust
 //! # use async_recursion::async_recursion;
 //!
 //! #[async_recursion(?Send)]
-//! async fn example() {
+//! async fn returned_future_is_not_send() {
+//!     // ...
+//! }
+//! ```
+//!
+//! ## Sync option
+//!
+//! The returned [`Future`] doesn't have a [`Sync`] bound as it is usually not required.
+//! You can include a [`Sync`] bound as follows:
+//!
+//! ```rust
+//! # use async_recursion::async_recursion;
+//!
+//! #[async_recursion(Sync)]
+//! async fn returned_future_is_send_and_sync() {
 //!     // ...
 //! }
 //! ```
 //!
 //! In detail:
 //!
-//! - `#[async_recursion]` modifies your function to return a [`BoxFuture`], and
-//! - `#[async_recursion(?Send)]` modifies your function to return a [`LocalBoxFuture`].
 //!
-//! [`BoxFuture`]: https://docs.rs/futures/0.3.19/futures/future/type.BoxFuture.html
-//! [`LocalBoxFuture`]: https://docs.rs/futures/0.3.19/futures/future/type.LocalBoxFuture.html
+//! - `#[async_recursion]` modifies your function to return a boxed [`Future`] with a [`Send`] bound.
+//! - `#[async_recursion(?Send)]` modifies your function to return a boxed [`Future`] _without_ a [`Send`] bound.
+//! - `#[async_recursion(Sync)]` modifies your function to return a boxed [`Future`] with [`Send`] and [`Sync`] bounds.
 //!
 //! ### License
 //!

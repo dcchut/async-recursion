@@ -41,6 +41,9 @@ async fn count_down(foo: Option<&str>) -> i32 {
     0
 }
 
+#[async_recursion]
+async fn explicit_async_recursion_bound(_: Option<&'async_recursion String>) {}
+
 #[test]
 fn lifetime_expansion_works() {
     block_on(async move {
@@ -73,5 +76,6 @@ fn lifetime_expansion_works() {
         assert_eq!(contains_value_2(&12, &node).await, false);
 
         count_down(None).await;
+        explicit_async_recursion_bound(None).await;
     });
 }
