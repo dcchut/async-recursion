@@ -72,13 +72,13 @@ impl VisitMut for ReferenceVisitor {
 
     fn visit_type_reference_mut(&mut self, argument: &mut TypeReference) {
         if argument.lifetime.is_none() {
-            // If this reference doesn't have a lifetime (&T) then give it an explicit one.
+            // If this reference doesn't have a lifetime (e.g. &T), then give it one.
             let lt = Lifetime::new(&format!("'life{}", self.counter), Span::call_site());
             self.lifetimes.push(ArgLifetime::New(parse_quote!(#lt)));
             argument.lifetime = Some(lt);
             self.counter += 1;
         } else {
-            // If it does (&'life T), then keep track of it.
+            // If it does (e.g. &'life T), then keep track of it.
             let lt = argument.lifetime.as_ref().cloned().unwrap();
 
             // Check that this lifetime isn't already in our vector
@@ -112,14 +112,13 @@ fn transform_sig(sig: &mut Signature, args: &RecursionArgs) {
     // Remove the asyncness of this function
     sig.asyncness = None;
 
-    // Use a visitor to find reference expressions?
+    // Find and update any references in the input arguments
     let mut v = ReferenceVisitor::default();
-
     for input in &mut sig.inputs {
         v.visit_fn_arg_mut(input);
     }
 
-    // Does this expansion require `async_recursion to be added to the output
+    // Does this expansion require `async_recursion to be added to the output?
     let mut requires_lifetime = false;
     let mut where_clause_lifetimes = vec![];
     let mut where_clause_generics = vec![];
