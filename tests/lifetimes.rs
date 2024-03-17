@@ -34,6 +34,13 @@ async fn contains_value_2<'a, 'b, T: PartialEq>(value: &'b T, node: &'b Node<'a,
     contains_value(value, node).await
 }
 
+// The reference inside foo needs a `async_recursion bound
+#[async_recursion]
+async fn count_down(foo: Option<&str>) -> i32 {
+    let _ = foo;
+    0
+}
+
 #[test]
 fn lifetime_expansion_works() {
     block_on(async move {
@@ -64,5 +71,7 @@ fn lifetime_expansion_works() {
         assert_eq!(contains_value_2(&17, &node).await, true);
         assert_eq!(contains_value_2(&13, &node).await, true);
         assert_eq!(contains_value_2(&12, &node).await, false);
+
+        count_down(None).await;
     });
 }

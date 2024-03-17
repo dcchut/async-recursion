@@ -1,8 +1,8 @@
 use proc_macro2::{Span, TokenStream};
 use quote::{quote, ToTokens};
 use syn::{
-    parse_quote, punctuated::Punctuated, Block, FnArg, Lifetime, ReturnType, Signature, Type,
-    WhereClause,
+    parse_quote, punctuated::Punctuated, visit_mut::VisitMut, Block, Lifetime, Receiver,
+    ReturnType, Signature, TypeReference, WhereClause,
 };
 
 use crate::parse::{AsyncItem, RecursionArgs};
@@ -40,6 +40,63 @@ impl ArgLifetime {
     }
 }
 
+#[derive(Default)]
+struct ReferenceVisitor {
+    counter: usize,
+    lifetimes: Vec<ArgLifetime>,
+    self_receiver: bool,
+    self_receiver_new_lifetime: bool,
+    self_lifetime: Option<Lifetime>,
+}
+
+impl VisitMut for ReferenceVisitor {
+    fn visit_receiver_mut(&mut self, receiver: &mut Receiver) {
+        self.self_lifetime = Some(if let Some((_, lt)) = &mut receiver.reference {
+            self.self_receiver = true;
+
+            if let Some(lt) = lt {
+                lt.clone()
+            } else {
+                // Use 'life_self to avoid collisions with 'life<count> lifetimes.
+                let new_lifetime: Lifetime = parse_quote!('life_self);
+                lt.replace(new_lifetime.clone());
+
+                self.self_receiver_new_lifetime = true;
+
+                new_lifetime
+            }
+        } else {
+            return;
+        });
+    }
+
+    fn visit_type_reference_mut(&mut self, argument: &mut TypeReference) {
+        if argument.lifetime.is_none() {
+            // If this reference doesn't have a lifetime (e.g. &T), then give it one.
+            let lt = Lifetime::new(&format!("'life{}", self.counter), Span::call_site());
+            self.lifetimes.push(ArgLifetime::New(parse_quote!(#lt)));
+            argument.lifetime = Some(lt);
+            self.counter += 1;
+        } else {
+            // If it does (e.g. &'life T), then keep track of it.
+            let lt = argument.lifetime.as_ref().cloned().unwrap();
+
+            // Check that this lifetime isn't already in our vector
+            let ident_matches = |x: &ArgLifetime| {
+                if let ArgLifetime::Existing(elt) = x {
+                    elt.ident == lt.ident
+                } else {
+                    false
+                }
+            };
+
+            if !self.lifetimes.iter().any(ident_matches) {
+                self.lifetimes.push(ArgLifetime::Existing(lt));
+            }
+        }
+    }
+}
+
 // Input:
 //     async fn f<S, T>(x : S, y : &T) -> Ret;
 //
@@ -55,67 +112,13 @@ fn transform_sig(sig: &mut Signature, args: &RecursionArgs) {
     // Remove the asyncness of this function
     sig.asyncness = None;
 
-    // Find all reference arguments
-    let mut ref_arguments = Vec::new();
-    let mut self_lifetime = None;
-
-    for arg in &mut sig.inputs {
-        if let FnArg::Typed(pt) = arg {
-            match pt.ty.as_mut() {
-                // rustc can give us a None-delimited group if this type comes from
-                // a macro_rules macro.  I don't think this can happen for code the user has written.
-                Type::Group(tg) => {
-                    if let Type::Reference(tr) = &mut *tg.elem {
-                        ref_arguments.push(tr);
-                    }
-                }
-                Type::Reference(tr) => {
-                    ref_arguments.push(tr);
-                }
-                _ => {}
-            }
-        } else if let FnArg::Receiver(recv) = arg {
-            if let Some((_, slt)) = &mut recv.reference {
-                self_lifetime = Some(slt);
-            }
-        }
+    // Find and update any references in the input arguments
+    let mut v = ReferenceVisitor::default();
+    for input in &mut sig.inputs {
+        v.visit_fn_arg_mut(input);
     }
 
-    let mut counter = 0;
-    let mut lifetimes = Vec::new();
-
-    if !ref_arguments.is_empty() {
-        for ra in &mut ref_arguments {
-            // If this reference arg doesn't have a lifetime, give it an explicit one
-            if ra.lifetime.is_none() {
-                let lt = Lifetime::new(&format!("'life{counter}"), Span::call_site());
-
-                lifetimes.push(ArgLifetime::New(parse_quote!(#lt)));
-
-                ra.lifetime = Some(lt);
-                counter += 1;
-            } else {
-                let lt = ra.lifetime.as_ref().cloned().unwrap();
-
-                // Check that this lifetime isn't already in our vector
-                let ident_matches = |x: &ArgLifetime| {
-                    if let ArgLifetime::Existing(elt) = x {
-                        elt.ident == lt.ident
-                    } else {
-                        false
-                    }
-                };
-
-                if !lifetimes.iter().any(ident_matches) {
-                    lifetimes.push(ArgLifetime::Existing(
-                        ra.lifetime.as_ref().cloned().unwrap(),
-                    ));
-                }
-            }
-        }
-    }
-
-    // Does this expansion require `async_recursion to be added to the output
+    // Does this expansion require `async_recursion to be added to the output?
     let mut requires_lifetime = false;
     let mut where_clause_lifetimes = vec![];
     let mut where_clause_generics = vec![];
@@ -127,13 +130,13 @@ fn transform_sig(sig: &mut Signature, args: &RecursionArgs) {
     for param in sig.generics.type_params() {
         let ident = param.ident.clone();
         where_clause_generics.push(ident);
-
         requires_lifetime = true;
     }
 
     // Add an 'a : 'async_recursion bound to any lifetimes 'a appearing in the function
-    if !lifetimes.is_empty() {
-        for alt in lifetimes {
+    if !v.lifetimes.is_empty() {
+        requires_lifetime = true;
+        for alt in v.lifetimes {
             if let ArgLifetime::New(lt) = &alt {
                 // If this is a new argument,
                 sig.generics.params.push(parse_quote!(#lt));
@@ -143,29 +146,15 @@ fn transform_sig(sig: &mut Signature, args: &RecursionArgs) {
             let lt = alt.lifetime();
             where_clause_lifetimes.push(lt);
         }
-
-        requires_lifetime = true;
     }
 
     // If our function accepts &self, then we modify this to the explicit lifetime &'life_self,
     // and add the bound &'life_self : 'async_recursion
-    if let Some(slt) = self_lifetime {
-        let lt = {
-            if let Some(lt) = slt.as_mut() {
-                lt.clone()
-            } else {
-                // We use `life_self here to avoid any collisions with `life0, `life1 from above
-                let lt: Lifetime = parse_quote!('life_self);
-                sig.generics.params.push(parse_quote!(#lt));
-
-                // add lt to the lifetime of self
-                *slt = Some(lt.clone());
-
-                lt
-            }
-        };
-
-        where_clause_lifetimes.push(lt);
+    if v.self_receiver {
+        if v.self_receiver_new_lifetime {
+            sig.generics.params.push(parse_quote!('life_self));
+        }
+        where_clause_lifetimes.extend(v.self_lifetime);
         requires_lifetime = true;
     }
 
