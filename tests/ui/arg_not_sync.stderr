@@ -21,7 +21,7 @@ note: required because it appears within the type `Pin<Box<dyn Future<Output = (
 note: required by a bound in `assert_is_sync`
   --> tests/ui/arg_not_sync.rs:3:27
    |
-3  | fn assert_is_sync(_: impl Sync) {}
+ 3 | fn assert_is_sync(_: impl Sync) {}
    |                           ^^^^ required by this bound in `assert_is_sync`
 
 error[E0277]: `dyn Future<Output = ()>` cannot be shared between threads safely
@@ -47,5 +47,5 @@ note: required because it appears within the type `Pin<Box<dyn Future<Output = (
 note: required by a bound in `assert_is_sync`
   --> tests/ui/arg_not_sync.rs:3:27
    |
-3  | fn assert_is_sync(_: impl Sync) {}
+ 3 | fn assert_is_sync(_: impl Sync) {}
    |                           ^^^^ required by this bound in `assert_is_sync`
