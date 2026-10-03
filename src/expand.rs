@@ -2,7 +2,7 @@ use proc_macro2::{Span, TokenStream};
 use quote::{quote, ToTokens};
 use syn::{
     parse_quote, punctuated::Punctuated, visit_mut::VisitMut, Block, Lifetime, Receiver,
-    ReturnType, Signature, TypeReference, WhereClause,
+    ReceiverKind, ReturnType, Signature, TypeReference, WhereClause,
 };
 
 use crate::parse::{AsyncItem, RecursionArgs};
@@ -50,22 +50,21 @@ struct ReferenceVisitor {
 
 impl VisitMut for ReferenceVisitor {
     fn visit_receiver_mut(&mut self, receiver: &mut Receiver) {
-        self.self_lifetime = Some(if let Some((_, lt)) = &mut receiver.reference {
-            self.self_receiver = true;
-
-            if let Some(lt) = lt {
-                lt.clone()
-            } else {
-                // Use 'life_self to avoid collisions with 'life<count> lifetimes.
-                let new_lifetime: Lifetime = parse_quote!('life_self);
-                lt.replace(new_lifetime.clone());
-
-                self.self_receiver_new_lifetime = true;
-
-                new_lifetime
-            }
-        } else {
+        // TODO: Support ReceiverKind::Typed as well
+        let ReceiverKind::Reference(_, lt, _) = &mut receiver.kind else {
             return;
+        };
+
+        self.self_receiver = true;
+        self.self_lifetime = Some(if let Some(lt) = lt {
+            lt.clone()
+        } else {
+            // Use 'life_self to avoid collisions with 'life<count> lifetimes.
+            let new_lifetime: Lifetime = parse_quote!('life_self);
+            lt.replace(new_lifetime.clone());
+
+            self.self_receiver_new_lifetime = true;
+            new_lifetime
         });
     }
 
