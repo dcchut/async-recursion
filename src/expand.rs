@@ -126,7 +126,8 @@ fn transform_sig(sig: &mut Signature, args: &RecursionArgs) {
 
     // Add an S : 'async_recursion bound to any generic parameter
     for param in sig.generics.type_params() {
-        let ident = param.ident.clone();
+        let mut ident = param.ident.clone();
+        ident.set_span(Span::call_site());
         where_clause_generics.push(ident);
         requires_lifetime = true;
     }

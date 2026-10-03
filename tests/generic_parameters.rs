@@ -33,6 +33,8 @@ pub async fn generic_parameter<S: ThirtySeven + Send>(mut x: S) -> u64 {
     }
 }
 
+// x is only used in the recursive call, but we need it to test a non-Send T under ?Send
+#[allow(clippy::only_used_in_recursion)]
 #[async_recursion(?Send)]
 pub async fn generic_parameter_no_send<T>(x: T, y: u64) -> u64 {
     if y > 0 {
