@@ -25,6 +25,15 @@ jobs:
       - run: cargo install cargo-expand
       - run: cargo test --verbose
 
+  msrv:
+    name: MSRV
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@1.71.0
+      # Only the library is covered by rust-version; dev-dependencies need a newer toolchain.
+      - run: cargo check --lib
+
   fmt:
     name: Fmt
     runs-on: ubuntu-latest
