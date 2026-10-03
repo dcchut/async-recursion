@@ -1,5 +1,4 @@
 use async_recursion::async_recursion;
-#[must_use]
 pub fn n(
     x: i32,
 ) -> ::core::pin::Pin<

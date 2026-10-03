@@ -1,5 +1,4 @@
 use async_recursion::async_recursion;
-#[must_use]
 fn fib(
     n: u32,
 ) -> ::core::pin::Pin<

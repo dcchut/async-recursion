@@ -1,5 +1,4 @@
 use async_recursion::async_recursion;
-#[must_use]
 pub fn generic_parameter_no_send<'async_recursion, T>(
     x: T,
     y: u64,

@@ -1,5 +1,4 @@
 use async_recursion::async_recursion;
-#[must_use]
 pub fn generic_parameter<'async_recursion, S: Marker + Send>(
     mut x: S,
 ) -> ::core::pin::Pin<

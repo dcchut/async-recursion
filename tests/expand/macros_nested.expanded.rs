@@ -1,4 +1,3 @@
-#[must_use]
 fn owned<'life0, 'async_recursion, F>(
     param: usize,
     f: &'life0 F,
@@ -16,7 +15,6 @@ where
         f(param);
     })
 }
-#[must_use]
 fn by_ref<'life0, 'life1, 'async_recursion, F>(
     param: &'life0 usize,
     f: &'life1 F,
@@ -35,7 +33,6 @@ where
         f(param);
     })
 }
-#[must_use]
 fn by_ref_mut<'life0, 'life1, 'async_recursion, F>(
     param: &'life0 mut usize,
     f: &'life1 F,

@@ -7,7 +7,7 @@ error[E0277]: `dyn Future<Output = ()> + Send` cannot be shared between threads 
    |     required by a bound introduced by this call
    |
    = help: the trait `Sync` is not implemented for `dyn Future<Output = ()> + Send`
-   = note: required for `Unique<dyn Future<Output = ()> + Send>` to implement `Sync`
+   = note: required for `std::ptr::Unique<dyn Future<Output = ()> + Send>` to implement `Sync`
 note: required because it appears within the type `Box<dyn Future<Output = ()> + Send>`
   --> $RUST/alloc/src/boxed.rs
    |
@@ -33,7 +33,7 @@ error[E0277]: `dyn Future<Output = ()>` cannot be shared between threads safely
    |     required by a bound introduced by this call
    |
    = help: the trait `Sync` is not implemented for `dyn Future<Output = ()>`
-   = note: required for `Unique<dyn Future<Output = ()>>` to implement `Sync`
+   = note: required for `std::ptr::Unique<dyn Future<Output = ()>>` to implement `Sync`
 note: required because it appears within the type `Box<dyn Future<Output = ()>>`
   --> $RUST/alloc/src/boxed.rs
    |
