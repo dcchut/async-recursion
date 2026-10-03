@@ -1,5 +1,4 @@
 use async_recursion::async_recursion;
-#[must_use]
 fn count_down<'life0, 'async_recursion>(
     foo: Option<&'life0 str>,
 ) -> ::core::pin::Pin<

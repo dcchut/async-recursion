@@ -1,5 +1,4 @@
 use async_recursion::async_recursion;
-#[must_use]
 fn explicit_async_recursion_bound<'life0, 'life1, 'async_recursion>(
     t: &'life0 T,
     p: &'life1 [String],

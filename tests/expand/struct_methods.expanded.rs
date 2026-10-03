@@ -1,7 +1,6 @@
 use async_recursion::async_recursion;
 struct S;
 impl S {
-    #[must_use]
     pub fn all_of_the_above<'a, 'b, 'life0, 'life1, 'life_self, 'async_recursion, S, T>(
         &'life_self self,
         _x: &'life0 S,
