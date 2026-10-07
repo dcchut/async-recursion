@@ -3,11 +3,11 @@
 //! [![Latest version](https://img.shields.io/crates/v/async-recursion)](https://crates.io/crates/async-recursion)
 //! [![crates.io downloads](https://img.shields.io/crates/d/async_recursion)](https://crates.io/crates/async-recursion)
 //! [![Build Status](https://img.shields.io/github/actions/workflow/status/dcchut/async-recursion/ci.yml?branch=master)](https://github.com/dcchut/async-recursion/actions)
-//! ![Apache/MIT2.0 License](https://img.shields.io/crates/l/async-recursion)
+//! [![Apache 2.0/MIT License](https://img.shields.io/crates/l/async-recursion)](https://github.com/dcchut/async-recursion#license)
 //!
 //! Procedural macro for recursive async functions.
 //!
-//! * [Documentation](https://docs.rs/async-recursion/)
+//! * [Documentation](https://docs.rs/async-recursion)
 //! * Cargo package: [async-recursion](https://crates.io/crates/async-recursion)
 //!
 //! ## Motivation
@@ -90,8 +90,8 @@
 //! ### License
 //!
 //! Licensed under either of
-//!  * Apache License, Version 2.0 (<http://www.apache.org/licenses/LICENSE-2.0>)
-//!  * MIT license (<http://opensource.org/licenses/MIT>)
+//!  * Apache License, Version 2.0 (<https://www.apache.org/licenses/LICENSE-2.0>)
+//!  * MIT license (<https://opensource.org/license/mit>)
 //!
 //! at your option.
 
