@@ -87,6 +87,8 @@
 //! - `#[async_recursion(?Send)]` modifies your function to return a boxed [`Future`] _without_ a [`Send`] bound.
 //! - `#[async_recursion(Sync)]` modifies your function to return a boxed [`Future`] with [`Send`] and [`Sync`] bounds.
 //!
+//! [`Future`]: core::future::Future
+//!
 //! ### License
 //!
 //! Licensed under either of
