@@ -1,4 +1,7 @@
 use async_recursion::async_recursion;
+pub trait Marker {
+    fn descend(&mut self) -> bool;
+}
 pub fn generic_parameter<'async_recursion, S: Marker + Send>(
     mut x: S,
 ) -> ::core::pin::Pin<

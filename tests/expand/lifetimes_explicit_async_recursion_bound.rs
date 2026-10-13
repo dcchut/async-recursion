@@ -5,7 +5,7 @@ use async_recursion::async_recursion;
 
 #[async_recursion]
 async fn explicit_async_recursion_bound(
-    t: &T,
+    t: &str,
     p: &[String],
     prefix: Option<&'async_recursion [u8]>,
     layer: Option<&'async_recursion [u8]>,
