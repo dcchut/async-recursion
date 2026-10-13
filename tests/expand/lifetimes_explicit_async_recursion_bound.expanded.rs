@@ -1,6 +1,6 @@
 use async_recursion::async_recursion;
 fn explicit_async_recursion_bound<'life0, 'life1, 'async_recursion>(
-    t: &'life0 T,
+    t: &'life0 str,
     p: &'life1 [String],
     prefix: Option<&'async_recursion [u8]>,
     layer: Option<&'async_recursion [u8]>,
