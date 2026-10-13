@@ -22,7 +22,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@1.99.0
         with:
           components: rust-src  # required for consistent error messages
-      - run: cargo install cargo-expand
+      - run: cargo install cargo-expand --version 1.0.127 --locked
       - run: cargo test --verbose
 
   msrv:
